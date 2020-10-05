@@ -4,19 +4,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimaryDark">
+    android:background="@android:color/holo_blue_light">
+   
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical">
-        <TextView
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/digitarc"
+            android:contentDescription="description" />
+      <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#FFFFFF"
             android:gravity="center_horizontal"
             android:textSize="60sp"
-            android:text="Distance" />
+            android:text="Uzaklık" />
         <TextView
             android:id="@+id/tvDistance"
             android:layout_width="match_parent"
@@ -31,6 +37,6 @@
             android:textColor="#FFFFFF"
             android:gravity="center_horizontal"
             android:textSize="60sp"
-            android:text="meters" />
+            android:text="Metre" />
     </LinearLayout>
 </LinearLayout>

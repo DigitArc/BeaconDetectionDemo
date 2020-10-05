@@ -49,9 +49,8 @@
     <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BeaconLibraryBindings, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\BeaconLibraryBindings\BeaconLibraryBindings\bin\Debug\BeaconLibraryBindings.dll</HintPath>
+    <Reference Include="BeaconLibraryBindings">
+      <HintPath>Libs\BeaconLibraryBindings.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
