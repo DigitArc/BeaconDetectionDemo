@@ -1,15 +1,21 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Collections.Generic;
 using System.Net;
 using Android.OS;
 using Android.App;
+using Android.Content;
 using Android.Graphics;
+using Android.Locations;
+using Android.Media;
+using Android.Support.V4.App;
 using Android.Widget;
 using Android.Support.V7.App;
 using Java.Net;
 using Java.Util;
 using Org.Altbeacon.Beacon;
+using Org.Altbeacon.Beacon.Startup;
 using Region = Org.Altbeacon.Beacon.Region;
 using Uri = Android.Net.Uri;
 
@@ -20,8 +26,22 @@ namespace BeaconDetectionDemo
     public class MainActivity : AppCompatActivity, IBeaconConsumer, IRangeNotifier
     {
         private TextView tvDistance;
+        private TextView beaconCount;
+        private TextView beaconIds;
         private BeaconManager beaconManager;
+        private TextView tableName;
         private ImageView image;
+        private TextView beaconsTextView;
+
+        private static readonly Dictionary<string, string> BeaconList = new Dictionary<string, string>
+        {
+            {"F3:01:9A:8A:21:FF","MASA 1"},
+            {"C6:26:C7:DD:D6:CA","MASA 2"},
+            {"F0:6E:83:15:61:72","MASA 3"}
+        };
+        private static Dictionary<string, Beacon> DetectedBeacons = new Dictionary<string, Beacon>();
+
+        private Beacon _selectedBeacon = null;
         private Bitmap GetImageBitmapFromUrl(string url)
         {
             Bitmap imageBitmap = null;
@@ -43,8 +63,10 @@ namespace BeaconDetectionDemo
             base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
 
-            tvDistance = FindViewById<TextView>(Resource.Id.tvDistance);
+            beaconIds = FindViewById<TextView>(Resource.Id.beaconCount);
+            //tvDistance = FindViewById<TextView>(Resource.Id.tvDistance);
             image = FindViewById<ImageView>(Resource.Id.digitarc);
+            //tableName = FindViewById<TextView>(Resource.Id.tableName);
             var imageBitmap = GetImageBitmapFromUrl("https://digitarc.net/assets/img/digitarc-logo-gri.png");
             image.SetImageBitmap(imageBitmap);
             beaconManager = BeaconManager.GetInstanceForApplication(this);
@@ -62,7 +84,7 @@ namespace BeaconDetectionDemo
 
             var beaconParser2 = new BeaconParser();
             beaconParser2.SetBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25");
-
+            CreateNotificationChannel();
             beaconManager.BeaconParsers.Add(beaconParser);
             beaconManager.BeaconParsers.Add(beaconParser2);
             beaconManager.AddRangeNotifier(this);
@@ -81,16 +103,16 @@ namespace BeaconDetectionDemo
         {
             try
             {
-                beaconManager.StartRangingBeaconsInRegion(new Region("2F234454-CF6D-4A0F-ADF2-F4911BA9FFA6",
-                    Identifier.FromUuid(UUID.FromString("2F234454-CF6D-4A0F-ADF2-F4911BA9FFA6")),
-                    Identifier.FromInt(1),
-                    Identifier.FromInt(1)));
-                //beaconManager.StartRangingBeaconsInRegion(new Region(Guid.NewGuid().ToString(), new List<Identifier>
-                //{
-                //    Identifier.FromUuid(UUID.FromString("0000ffe0-0000-1000-8000-00805f9b34fb")),
-                //    Identifier.FromUuid(UUID.FromString("5276d744-90c9-40a7-960e-cc1c3764bc40")),
-                //    Identifier.FromUuid(UUID.FromString("dd2c373f-ea1b-4b7f-bee0-e07110d2ae06"))
-                //}));
+                var region = new Region("SarayMuhallebicisi", new List<Identifier>
+                {
+                    Identifier.FromUuid(UUID.FromString("adc2050d-3dce-4700-adf9-f42c8f70e5a4"))
+                });
+                //beaconManager.ForegroundScanPeriod = 1;
+                //beaconManager.ForegroundBetweenScanPeriod = 1;
+                //beaconManager.BackgroundBetweenScanPeriod= 1;
+                //beaconManager.BackgroundScanPeriod = 1;
+                beaconManager.StartRangingBeaconsInRegion(region);
+              
             }
             catch (Exception e)
             {
@@ -99,23 +121,64 @@ namespace BeaconDetectionDemo
             }
         }
 
+        void CreateNotificationChannel()
+        {
+            if (Build.VERSION.SdkInt < BuildVersionCodes.O)
+            {
+                // Notification channels are new in API 26 (and not a part of the
+                // support library). There is no need to create a notification 
+                // channel on older versions of Android.
+                return;
+            }
+
+            var channel = new NotificationChannel("Digitarc", "Digitarc", NotificationImportance.Default)
+            {
+                Description = "Digitarc"
+            };
+
+            var notificationManager = (NotificationManager)GetSystemService(NotificationService);
+            notificationManager.CreateNotificationChannel(channel);
+        }
         private bool isShowToastMessage = false;
         public void DidRangeBeaconsInRegion(ICollection<Beacon> p0, Region p1)
         {
+
             if (!p0.Any())
                 return;
-            var toast = Toast.MakeText(Application.Context, "Beacon bulundu", ToastLength.Short);
-            if (isShowToastMessage == false)
+            var beacons = p0.ToList().OrderBy(p => p.Distance).ToList();
+
+            var first = beacons.First();
+            if (_selectedBeacon == null)
             {
-                toast.Show();
-                isShowToastMessage = true;
+                _selectedBeacon = first;
             }
 
-            RunOnUiThread(() =>
+            var updateBeacon = beacons.FirstOrDefault(p => p.BluetoothAddress == _selectedBeacon.BluetoothAddress);
+            if (updateBeacon != null)
             {
-                tvDistance.Text = p0.First().Distance.ToString("0.00");
-            });
+                _selectedBeacon = updateBeacon;
+            }
+            else
+            {
+                if (first.Distance < _selectedBeacon.Distance)
+                {
+                    _selectedBeacon = first;
+                }
+            }
+
+            if (_selectedBeacon.BluetoothAddress != first.BluetoothAddress)
+            {
+                if (first.Distance < _selectedBeacon.Distance)
+                {
+                    _selectedBeacon = first;
+                }
+            }
+
+            beaconIds.Text = BeaconList[_selectedBeacon.BluetoothAddress];
+           
         }
+
+
     }
 }
 

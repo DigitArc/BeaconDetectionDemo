@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/holo_blue_light">
-   
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -16,27 +17,23 @@
             android:layout_height="wrap_content"
             android:id="@+id/digitarc"
             android:contentDescription="description" />
-      <TextView
+        <TextView
+          android:id="@+id/beaconIds"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:textColor="#FFFFFF"
+          android:gravity="center_horizontal"
+          android:textSize="60sp"
+          android:text=" " />
+        <TextView
+            android:id="@+id/beaconCount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#FFFFFF"
             android:gravity="center_horizontal"
             android:textSize="60sp"
-            android:text="Uzaklık" />
-        <TextView
-            android:id="@+id/tvDistance"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:gravity="center_horizontal"
-            android:textSize="120sp"
-            android:text="0" />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:gravity="center_horizontal"
-            android:textSize="60sp"
-            android:text="Metre" />
+            android:text=" " />
+  
     </LinearLayout>
+
 </LinearLayout>
